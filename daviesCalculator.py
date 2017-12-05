@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 # xp necessary for a certain level
 total = [600, 550, 530, 500, 480, 460, 430, 420, 410, 390, 360, 340, 320]
 red = [240, 230, 215, 200, 190, 180, 160, 155, 150, 140, 130, 120, 110]
@@ -21,6 +23,11 @@ def getMaxPositions(userXp):
         blueIndex = -1
         greenIndex = -1
 
+        for i,xp in enumerate(total):
+            if (userXp[0] + userXp[4]) >= xp:
+                totalIndex = i
+                break;
+
         for i,xp in enumerate(red):
             if userXp[1] >= xp:
                 redIndex = i
@@ -36,34 +43,35 @@ def getMaxPositions(userXp):
                 greenIndex = i
                 break;
 
-        xpIndicies = [redIndex, blueIndex, greenIndex]
+        xpIndicies = [totalIndex, redIndex, blueIndex, greenIndex]
         # find the colored xp that has the highest index.
         return xpIndicies
 
 
 def findBestUseageOfBonus(userXp):
-    bonusXpAmount = userXp[4]
+    distributionXP = deepcopy(userXp)
+    bonusXpAmount = distributionXP[4]
     bonusDistribution = [0,0,0]
     while(bonusXpAmount != 0):
         # find the colored xp that has the highest index.
-        xpIndicies = getMaxPositions(userXp)
+        xpIndicies = getMaxPositions(distributionXP)[1:4]
         max_positions = [i for i, x in enumerate(xpIndicies) if x == max(xpIndicies)]
         # prioritize blue
         if 1 in max_positions:
             bonusDistribution[1] += 1
-            userXp[2] += 1
+            distributionXP[2] += 1
         elif 2 in max_positions:
             bonusDistribution[2] += 1
-            userXp[3] += 1
+            distributionXP[3] += 1
         elif 0 in max_positions:
             bonusDistribution[0] += 1
-            userXp[1] += 1
+            distributionXP[1] += 1
         else:
             print("Something went wrong")
-        userXp[4] -= 1
+        # userXp[4] -= 1
         bonusXpAmount -= 1
 
-    maxGrade = grade[max(getMaxPositions(userXp))]
+    maxGrade = grade[max(getMaxPositions(distributionXP))]
     print(f"Using your current xp and smartly distributing your bonus xp could net you a(n)\n{maxGrade}\nif you distribute your bonus xp as follows:")
     return bonusDistribution
 
@@ -85,7 +93,7 @@ def main():
     blueDiff = 0
     greenDiff = 0
 
-    if userXp[0] < total[indexOfGrade]:
+    if (userXp[0] + userXp[4]) < total[indexOfGrade]:
         totalDiff = total[indexOfGrade] - (userXp[0] + userXp[4])
         print(f"Need {totalDiff} more total")
     if userXp[1] < red[indexOfGrade]:
@@ -109,8 +117,15 @@ def main():
     print(f"{bestUse[1]} in blue")
     print(f"{bestUse[2]} in green")
 
-    print(f"{bestUse[0]} in red ({redDiff - bestUse[0]})")
-    print(f"{bestUse[1]} in blue ({blueDiff - bestUse[1]})")
-    print(f"{bestUse[2]} in green ({greenDiff - bestUse[2]})")
+    print("")
+    print("Your XP breakdown would be:")
+    realTotal = userXp[0]+userXp[4]
+    redTotal = userXp[1] + bestUse[0]
+    blueTotal = userXp[2] + bestUse[1]
+    greenTotal = userXp[3] + bestUse[2]
+    print(f"Total: {realTotal}")
+    print(f"RED: {redTotal}")
+    print(f"BLUE: {blueTotal}")
+    print(f"GREEN: {greenTotal}")
 
 main()
